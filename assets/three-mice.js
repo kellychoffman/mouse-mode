@@ -237,7 +237,7 @@
 			// overlapping blurs fuse into one metaball surface.
 			stage.innerHTML =
 				'<svg class="tm-defs" width="0" height="0" aria-hidden="true"><defs>' +
-				'<filter id="tm-goo"><feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b"/>' +
+				'<filter id="tm-goo"><feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b"/>' +
 				'<feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -11"/>' +
 				'</filter></defs></svg>' +
 				'<div class="tm-goo"></div>';
@@ -263,19 +263,23 @@
 			lastSpawn = now;
 			var el = document.createElement('div');
 			el.className = 'tm-dot';
-			var size = 6 + Math.random() * 8;
+			// Droplets must stay chunky: the goo filter's alpha crush
+			// erases anything smaller than ~18px, so drops start large
+			// and the threshold itself swallows them at the end of life.
+			var size = 22 + Math.random() * 8;
 			el.style.width = size + 'px';
 			el.style.height = size + 'px';
 			goo.appendChild(el);
 			var ang = Math.random() * Math.PI * 2;
-			var speed = 0.5 + Math.random() * 0.9;
+			var speed = 0.6 + Math.random() * 0.8;
 			drops.push({
 				el: el,
 				size: size,
-				x: parts[0].x,
-				y: parts[0].y,
+				// Start at the blob's edge so the drop visibly tears away.
+				x: parts[0].x + Math.cos(ang) * SIZES[0] * 0.4,
+				y: parts[0].y + Math.sin(ang) * SIZES[0] * 0.4,
 				vx: Math.cos(ang) * speed,
-				vy: Math.sin(ang) * speed - 0.3, // slight upward bias
+				vy: Math.sin(ang) * speed - 0.25, // slight upward bias
 				life: 1,
 			});
 		}
@@ -315,7 +319,7 @@
 
 			for (var d = drops.length - 1; d >= 0; d--) {
 				var dr = drops[d];
-				dr.life -= 0.011;
+				dr.life -= 0.007;
 				if (dr.life <= 0) {
 					goo.removeChild(dr.el);
 					drops.splice(d, 1);
@@ -325,9 +329,12 @@
 				dr.y += dr.vy;
 				dr.vx *= 0.985;
 				dr.vy *= 0.985;
+				// Scale floor keeps the drop above the goo threshold for
+				// most of its life; it winks out near the end.
+				var ds = 0.5 + 0.5 * dr.life;
 				dr.el.style.transform =
 					'translate3d(' + (dr.x - dr.size / 2) + 'px,' +
-					(dr.y - dr.size / 2) + 'px,0) scale(' + dr.life.toFixed(3) + ')';
+					(dr.y - dr.size / 2) + 'px,0) scale(' + ds.toFixed(3) + ')';
 			}
 
 			// Densify over links: the faded blob turns near-solid so

@@ -5,7 +5,7 @@ right corner with three mice to choose from:
 
 | Mode | What it does |
 | --- | --- |
-| **Blob** (default) | The native cursor disappears and a faded blob oozes after the pointer — six trailing metaballs fused with an SVG gooey filter. It squashes and stretches along its direction of travel, churns its silhouette as it sits, and over links it swells and turns near-solid so "clickable" reads instantly. |
+| **Blob** (default) | The native cursor disappears and a faded blob oozes after the pointer — six trailing metaballs fused with an SVG gooey filter. It squashes and stretches along its direction of travel, and over links it swells and turns near-solid so "clickable" reads instantly. Leave the mouse still and it gets restless — droplets tear off, drift, and dissolve, faster the longer you idle. |
 | **Pixel** | The classic chunky pixel arrow at 2× scale — white fill, black outline, notched tail — with the classic deep-knuckled pointing hand over links and buttons. Drawn from 1-bit bitmaps onto a canvas at runtime, so every pixel is a fat, honest pixel. |
 | **Loupe** | A 168px magnifying glass that *is* the cursor (the native one hides) and enlarges the page 1.7× — a live, scaled clone of the page rendered inside the circle, so text stays vector-crisp. No border or drop shadow — just the faintest flat-top loupe glass (hairline rim, even sheen) so it stays findable over flat backgrounds. |
 

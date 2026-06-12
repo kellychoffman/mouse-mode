@@ -4,10 +4,11 @@
  * Picker pill, upper right
  * ------------------------------------------------------------------ */
 
+/* 45px keeps the pill clear of WordPress's logged-in admin bar. */
 .tm-root {
 	position: fixed;
-	top: 18px;
-	right: 18px;
+	top: 45px;
+	right: 45px;
 	z-index: 2147483646;
 	font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 }

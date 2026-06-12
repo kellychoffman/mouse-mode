@@ -109,9 +109,8 @@
 }
 
 .tm-btn img {
-	height: 16px;
+	height: 17px;
 	width: auto;
-	image-rendering: pixelated;
 }
 
 /* Tiny label that drops below a button on hover/focus */
@@ -254,6 +253,13 @@ html.tm-mode-lens * {
 html.tm-mode-lens .tm-root,
 html.tm-mode-lens .tm-root * {
 	cursor: default !important;
+}
+
+/* Near an embed the loupe stands down and the regular cursor returns
+   (iframes swallow mouse events, so the loupe can't follow you there). */
+html.tm-mode-lens.tm-lens-paused,
+html.tm-mode-lens.tm-lens-paused * {
+	cursor: auto !important;
 }
 
 .tm-lens {

@@ -40,23 +40,28 @@
 		return tag === 'IFRAME' || tag === 'EMBED' || tag === 'OBJECT';
 	}
 
+	// Is the pointer's last known position within `pad` px of any embed?
+	function nearEmbed(pad) {
+		var embeds = document.querySelectorAll('iframe, embed, object');
+		for (var i = 0; i < embeds.length; i++) {
+			var r = embeds[i].getBoundingClientRect();
+			if (
+				pointer.x > r.left - pad && pointer.x < r.right + pad &&
+				pointer.y > r.top - pad && pointer.y < r.bottom + pad
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// Last-ditch net: if mousemove has gone silent and the last known
 	// position is at/near an embed, the pointer almost certainly slid
 	// into it (embeds swallow events without telling the parent).
 	function silentNearEmbed(now) {
 		if (pointer.away || !pointer.seen) return false;
 		if (now - pointer.lastEvent < 300) return false;
-		var embeds = document.querySelectorAll('iframe, embed, object');
-		for (var i = 0; i < embeds.length; i++) {
-			var r = embeds[i].getBoundingClientRect();
-			if (
-				pointer.x > r.left - 28 && pointer.x < r.right + 28 &&
-				pointer.y > r.top - 28 && pointer.y < r.bottom + 28
-			) {
-				return true;
-			}
-		}
-		return false;
+		return nearEmbed(28);
 	}
 
 	function isInteractive(el) {
@@ -148,94 +153,55 @@
 	}
 
 	/* ------------------------------------------------------------------ *
-	 * Bitmap → PNG cursor renderer
+	 * Effect: pixel — the regular Mac arrow, just twice the size
 	 *
-	 * The cursor is drawn from a tiny character grid ('B' black, 'W' white,
-	 * '.' transparent) onto a canvas at 2x so every pixel is a fat 2x2
-	 * block — PNG data-URI cursors work everywhere, unlike SVG cursors.
+	 * CSS can't scale the native cursor, so we draw a faithful smooth
+	 * macOS-style arrow (black body, white rim, soft shadow) on a canvas
+	 * at 2x and serve it as a PNG cursor.
 	 * ------------------------------------------------------------------ */
 
-	// The classic Mac pixel arrow: white fill, black outline, vertical left
-	// edge, stepped hypotenuse, barb, and a tail that drifts down-right.
-	var ARROW = [
-		'BB..........',
-		'BWB.........',
-		'BWWB........',
-		'BWWWB.......',
-		'BWWWWB......',
-		'BWWWWWB.....',
-		'BWWWWWWB....',
-		'BWWWWWWWB...',
-		'BWWWWWWWWB..',
-		'BWWWWWWWWWB.',
-		'BWWWWWBBBBB.',
-		'BWWBWWB.....',
-		'BWB.BWWB....',
-		'BB...BWWB...',
-		'B....BWWWB..',
-		'......BBBB..',
-	];
-
-	// The classic Mac pointing hand: white glove, black outline, tall index
-	// finger, three stub knuckles at staggered heights with separations
-	// running into the palm, thumb, and a rounded wrist (no cuff band).
-	var HAND = [
-		'...BBBB.........',
-		'...BWWB.........',
-		'...BWWB.........',
-		'...BWWB.........',
-		'...BWWB.........',
-		'...BWWBBBB......',
-		'...BWWBWWBBBB...',
-		'...BWWBWWBWWBBB.',
-		'.BBBWWBWWBWWBWWB',
-		'BWWBWWBWWBWWBWWB',
-		'BWWBWWBWWBWWBWWB',
-		'BWWWWWBWWBWWBWWB',
-		'.BWWWWWWWWWWWWWB',
-		'.BWWWWWWWWWWWWWB',
-		'..BWWWWWWWWWWWB.',
-		'..BBBBBBBBBBBBB.',
-	];
-
-	function pixelCursor(rows, scale) {
-		var h = rows.length;
-		var w = 0;
-		for (var i = 0; i < h; i++) w = Math.max(w, rows[i].length);
-
+	function bigArrowPNG() {
 		var canvas = document.createElement('canvas');
-		canvas.width = w * scale;
-		canvas.height = h * scale;
+		canvas.width = 26;
+		canvas.height = 32;
 		var ctx = canvas.getContext('2d');
 
-		for (var y = 0; y < h; y++) {
-			for (var x = 0; x < w; x++) {
-				var ch = rows[y].charAt(x);
-				if (ch !== 'B' && ch !== 'W') continue;
-				ctx.fillStyle = ch === 'B' ? '#000' : '#fff';
-				ctx.fillRect(x * scale, y * scale, scale, scale);
-			}
-		}
+		// Classic arrow silhouette, ~17 units tall, drawn at 1.7x ≈ 29px.
+		ctx.translate(2, 1.5);
+		ctx.scale(1.7, 1.7);
+		var p = new Path2D(
+			'M0 0 L0 14.6 L3.6 11.7 L6.1 17.2 L8.8 16 L6.3 10.6 L10.9 10.6 Z'
+		);
+		ctx.lineJoin = 'round';
+
+		ctx.save();
+		ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+		ctx.shadowBlur = 2.5;
+		ctx.shadowOffsetY = 1;
+		ctx.fillStyle = '#000';
+		ctx.fill(p);
+		ctx.restore();
+
+		ctx.strokeStyle = '#fff';
+		ctx.lineWidth = 1.7;
+		ctx.stroke(p);
+		ctx.fillStyle = '#000';
+		ctx.fill(p);
+
 		return canvas.toDataURL('image/png');
 	}
 
-	/* ------------------------------------------------------------------ *
-	 * Effect: pixel — chunky arrow, Kare hand over links, via a style tag
-	 * ------------------------------------------------------------------ */
-
 	var pixel = (function () {
 		var styleEl = null;
+		var png = null;
 
 		function enable() {
 			if (!styleEl) {
-				var arrow = pixelCursor(ARROW, 2);
-				var hand = pixelCursor(HAND, 2);
+				png = png || bigArrowPNG();
 				styleEl = document.createElement('style');
 				styleEl.textContent =
 					'html.tm-mode-pixel, html.tm-mode-pixel * {' +
-					' cursor: url("' + arrow + '") 1 1, auto !important; }' +
-					'html.tm-mode-pixel :is(' + INTERACTIVE + ') {' +
-					' cursor: url("' + hand + '") 9 0, pointer !important; }' +
+					' cursor: url("' + png + '") 2 2, auto !important; }' +
 					// Over the picker itself, fall back to the normal cursor.
 					'html.tm-mode-pixel .tm-root, html.tm-mode-pixel .tm-root * {' +
 					' cursor: default !important; }';
@@ -252,7 +218,8 @@
 			enable: enable,
 			disable: disable,
 			icon: function () {
-				return pixelCursor(ARROW, 1);
+				png = png || bigArrowPNG();
+				return png;
 			},
 		};
 	})();
@@ -511,11 +478,15 @@
 		function tick() {
 			if (pointer.seen) el.style.visibility = 'visible';
 
-			if (silentNearEmbed(performance.now())) pointer.away = true;
+			// Anywhere near an embed, the loupe stands down completely and
+			// the regular cursor comes back — no waiting on events that
+			// iframes may never deliver.
+			var paused = pointer.seen && nearEmbed(40);
+			document.documentElement.classList.toggle('tm-lens-paused', paused);
 
-			// Step aside while choosing a cursor in the picker, and over
-			// embeds / out of the window (no events coming).
-			fade += ((pointer.overPicker || pointer.away ? 0 : 1) - fade) * 0.2;
+			// Step aside while choosing a cursor in the picker, near/over
+			// embeds, and out of the window (no events coming).
+			fade += ((pointer.overPicker || pointer.away || paused ? 0 : 1) - fade) * 0.2;
 			el.style.opacity = fade.toFixed(3);
 
 			lx += (pointer.x - lx) * 0.3;
@@ -554,6 +525,7 @@
 
 		function disable() {
 			document.documentElement.classList.remove('tm-mode-lens');
+			document.documentElement.classList.remove('tm-lens-paused');
 			window.removeEventListener('resize', onResize);
 			cancelAnimationFrame(raf);
 			clearTimeout(resizeTimer);
@@ -585,7 +557,7 @@
 			'<circle cx="10.8" cy="10.8" r="1.3" fill="currentColor" stroke="none"/></svg>',
 	};
 
-	var LABELS = { pixel: 'Pixel', blob: 'Blob', lens: 'Loupe' };
+	var LABELS = { pixel: 'Big', blob: 'Blob', lens: 'Loupe' };
 
 	function setMode(mode, save) {
 		if (!EFFECTS[mode] || mode === current) return;

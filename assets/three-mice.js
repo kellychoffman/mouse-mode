@@ -191,6 +191,62 @@
 		return canvas.toDataURL('image/png');
 	}
 
+	// The matching pointing hand for links: white glove, black outline,
+	// index finger up, three folded knuckles, thumb — smooth curves only.
+	function bigHandPNG() {
+		var canvas = document.createElement('canvas');
+		canvas.width = 30;
+		canvas.height = 32;
+		var ctx = canvas.getContext('2d');
+
+		ctx.translate(2, 1);
+		ctx.scale(1.5, 1.5);
+
+		var p = new Path2D(
+			'M7 2.2 C7 1 7.8 0.3 8.7 0.3 C9.6 0.3 10.4 1 10.4 2.2' +
+			' L10.4 7.4' +
+			' C10.6 6.9 11.4 6.6 12 6.9 C12.6 7.2 12.8 7.7 12.7 8.2' +
+			' C13 7.8 13.8 7.6 14.4 8 C14.9 8.3 15.1 8.8 15 9.3' +
+			' C15.4 9 16.1 9.1 16.5 9.6 C16.9 10.1 16.9 10.7 16.6 11.2' +
+			' L16.6 14.6' +
+			' C16.6 17.5 14.9 19.2 12 19.2 L9 19.2' +
+			' C6.8 19.2 5.2 18.4 4.2 16.8' +
+			' C3.5 15.6 2.4 13.6 1.4 11.9' +
+			' C0.9 11 1.3 10 2.1 9.7 C2.9 9.4 3.6 9.7 4.1 10.3' +
+			' L5.2 11.7' +
+			' C5.6 11.2 6 10.4 6.3 9.6 C6.6 8.9 7 8.4 7 7.6 Z'
+		);
+		ctx.lineJoin = 'round';
+
+		ctx.save();
+		ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+		ctx.shadowBlur = 2.5;
+		ctx.shadowOffsetY = 1;
+		ctx.fillStyle = '#fff';
+		ctx.fill(p);
+		ctx.restore();
+
+		ctx.strokeStyle = '#000';
+		ctx.lineWidth = 1;
+		ctx.stroke(p);
+		ctx.fillStyle = '#fff';
+		ctx.fill(p);
+		ctx.stroke(p);
+
+		// Finger creases between the knuckles.
+		ctx.lineWidth = 0.9;
+		ctx.lineCap = 'round';
+		[
+			'M10.4 7.8 C10.5 8.9 10.6 9.9 10.6 10.7',
+			'M12.75 8.4 C12.85 9.4 12.9 10.3 12.9 11',
+			'M15 9.5 C15 10.3 15 11 15 11.5',
+		].forEach(function (d) {
+			ctx.stroke(new Path2D(d));
+		});
+
+		return canvas.toDataURL('image/png');
+	}
+
 	var pixel = (function () {
 		var styleEl = null;
 		var png = null;
@@ -202,6 +258,8 @@
 				styleEl.textContent =
 					'html.tm-mode-pixel, html.tm-mode-pixel * {' +
 					' cursor: url("' + png + '") 2 2, auto !important; }' +
+					'html.tm-mode-pixel :is(' + INTERACTIVE + ') {' +
+					' cursor: url("' + bigHandPNG() + '") 15 2, pointer !important; }' +
 					// Over the picker itself, fall back to the normal cursor.
 					'html.tm-mode-pixel .tm-root, html.tm-mode-pixel .tm-root * {' +
 					' cursor: default !important; }';

@@ -1,18 +1,14 @@
 # Mouse Mode 🐭
 
-Everyone's adding dark mode switchers, but what about mouse mode? This is a tiny cursor wardrobe for your site's homepage. A little pill appears in the upper right corner with three mouse modes to choose from:
+Everyone's adding dark mode switchers, but what about mouse mode? This is a tiny cursor wardrobe for your site's homepage. A little pill appears in the upper right corner with three mouse modes to choose from: A blob (default), Loupe (good for photo heavy blogs), and a way to switch to the normal/default cursor. 
 
-| Mode | What it does |
-| --- | --- |
-| **Blob** (default) | The native cursor disappears and a faded blob oozes after the pointer — six trailing metaballs fused with an SVG gooey filter. It squashes and stretches along its direction of travel, and over links it swells and turns near-solid so "clickable" reads instantly. Whip it around fast and droplets shear off the back and fade; leave the mouse still for five seconds and a single droplet slowly oozes free instead. |
-| **Normal** | The plain default cursor, no effect at all — for the normies who just want their mouse back. |
-| **Loupe** | A 168px magnifying glass that *is* the cursor (the native one hides) and enlarges the page 1.7× — a live, scaled clone of the page rendered inside the circle, so text stays vector-crisp. No border or drop shadow — just the faintest flat-top loupe glass (hairline rim, even sheen) so it stays findable over flat backgrounds. Near video embeds it stands down and hands you the regular cursor (iframes swallow mouse events, so it can't follow you in there). |
+See it in action on my personal site: https://kelly.blog/
 
 Details:
 
 - The choice is remembered per visitor in `localStorage`.
 - The widget detects dark sites from the page background and flips its whole
-  palette — dark frosted pill, ivory blob — automatically.
+  palette automatically.
 - Hovering anywhere over the picker hands control back to the normal system
   cursor (and the blob/loupe melt out of the way) so choosing is never fiddly.
 - Link detection is forgiving: anything interactive within ~18px of the
@@ -23,7 +19,7 @@ Details:
 ## Install
 
 Copy (or zip and upload) this folder into `wp-content/plugins/` and activate
-**Mouse Mode** in wp-admin. No settings — it just shows up on the homepage.
+**Mouse Mode** in wp-admin. No settings, it just shows up on the homepage.
 
 ## Where it appears
 
@@ -36,7 +32,7 @@ add_filter( 'mouse_mode_should_load', '__return_true' );
 
 ## Try it without WordPress
 
-Open `demo.html` through any local web server — it's a fake dark homepage with
+Open `demo.html` through any local web server, it's a fake dark homepage with
 the plugin's CSS/JS wired up.
 
 ## Notes

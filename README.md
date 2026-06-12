@@ -1,6 +1,9 @@
 # Mouse Mode 🐭
 
-Everyone's adding dark mode switchers, but what about mouse mode? This is a tiny cursor wardrobe for your site's homepage. A little pill appears in the upper right corner with three mouse modes to choose from: A blob (default), Loupe (good for photo heavy blogs), and a way to switch to the normal/default cursor. 
+Everyone's adding dark mode switchers, but what about mouse mode? This is a tiny cursor wardrobe for your site's homepage. A little pill appears in the upper right corner with three mouse modes to choose from: 
+- A blob (default)
+- Loupe (good for photo heavy blogs)
+- And a way to switch back to the default cursor (for the normies)
 
 See it in action on my personal site: https://kelly.blog/
 

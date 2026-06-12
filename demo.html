@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three Mice — demo</title>
+<link rel="stylesheet" href="assets/three-mice.css?v=6">
+<style>
+	/* Stand-in for kelly.blog: light, minimal, photo-heavy */
+	* { box-sizing: border-box; }
+	body {
+		margin: 0;
+		background: #101010;
+		color: #e9e9e9;
+		font: 17px/1.65 -apple-system, "Helvetica Neue", sans-serif;
+	}
+	.wrap { max-width: 680px; margin: 0 auto; padding: 48px 24px 96px; }
+	header { display: flex; align-items: center; gap: 14px; margin-bottom: 56px; }
+	.avatar {
+		width: 44px; height: 44px; border-radius: 50%;
+		background: linear-gradient(135deg, #f5b971, #d96c47 60%, #7a4a8f);
+	}
+	.site-title { font-weight: 700; }
+	.site-title small { display: block; font-weight: 400; color: #8a8a8a; font-size: 13px; }
+	nav { margin-left: auto; display: flex; gap: 18px; font-size: 14px; }
+	nav a { color: #b5b5b5; text-decoration: none; border-bottom: 1px solid #3a3a3a; }
+	article { margin-bottom: 72px; }
+	article h2 { font-size: 22px; margin: 0 0 6px; }
+	.meta { font-size: 13px; color: #7d7d7d; margin-bottom: 16px; }
+	.photos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+	.ph { border-radius: 8px; height: 180px; }
+	.ph1 { background: linear-gradient(160deg, #9fb8a4, #4e6e58); }
+	.ph2 { background: linear-gradient(200deg, #d8c8b0, #8d7355); }
+	.ph3 { background: linear-gradient(120deg, #b8c8d8, #5a7390); grid-column: span 2; height: 220px; }
+	a.inline { color: #fff; }
+	button.like {
+		font: inherit; font-size: 14px; padding: 8px 16px; border-radius: 999px;
+		border: 1px solid #3a3a3a; background: #1c1c1c; color: #e9e9e9;
+	}
+</style>
+</head>
+<body>
+<div class="wrap">
+	<header>
+		<div class="avatar"></div>
+		<div class="site-title">kelly.blog<small>life, work, etc.</small></div>
+		<nav>
+			<a href="#">Design</a>
+			<a href="#">Writing</a>
+			<a href="#">Biking</a>
+		</nav>
+	</header>
+
+	<article>
+		<h2>Morning laps on Tiger Mountain</h2>
+		<div class="meta">June 8, 2026 · Biking</div>
+		<p>Got out before the heat and squeezed in two laps. The new line through
+		the lower switchbacks is finally riding clean, and the loam up top is
+		<a class="inline" href="#">unreasonably good</a> for June. Legs felt like
+		race legs. A good sign.</p>
+		<div class="photos">
+			<div class="ph ph1"></div>
+			<div class="ph ph2"></div>
+			<div class="ph ph3"></div>
+		</div>
+		<button class="like">♥ Like this post</button>
+	</article>
+
+	<article>
+		<h2>Noticing small interfaces</h2>
+		<div class="meta">June 3, 2026 · Design</div>
+		<p>I keep a folder of tiny interfaces — toggles, pickers, little knobs of
+		software that someone clearly sweated over. The best ones feel like
+		jewelry: small, precise, a bit of personality without asking for
+		attention. This week I added three. One of them is a
+		<a class="inline" href="#">cursor switcher</a>, which feels almost
+		recursive to write about.</p>
+	</article>
+</div>
+<script src="assets/three-mice.js?v=6" defer></script>
+</body>
+</html>

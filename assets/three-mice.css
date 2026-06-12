@@ -1,0 +1,328 @@
+/* Three Mice — cursor wardrobe styles */
+
+/* ------------------------------------------------------------------ *
+ * Picker pill, upper right
+ * ------------------------------------------------------------------ */
+
+.tm-root {
+	position: fixed;
+	top: 18px;
+	right: 18px;
+	z-index: 2147483646;
+	font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+.tm-pill {
+	display: flex;
+	gap: 2px;
+	padding: 5px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.78);
+	-webkit-backdrop-filter: blur(14px) saturate(1.4);
+	backdrop-filter: blur(14px) saturate(1.4);
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	box-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.05),
+		0 14px 36px -14px rgba(0, 0, 0, 0.28);
+	opacity: 0;
+	transform: translateY(-12px);
+	animation: tm-drop 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+}
+
+@keyframes tm-drop {
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.tm-btn {
+	position: relative;
+	width: 36px;
+	height: 36px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: #161616;
+	display: grid;
+	place-items: center;
+	-webkit-appearance: none;
+	appearance: none;
+	transition:
+		background-color 0.25s ease,
+		color 0.25s ease,
+		transform 0.18s ease;
+	opacity: 0;
+	animation: tm-pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.tm-btn:nth-child(1) { animation-delay: 0.45s; }
+.tm-btn:nth-child(2) { animation-delay: 0.55s; }
+.tm-btn:nth-child(3) { animation-delay: 0.65s; }
+
+@keyframes tm-pop-in {
+	from {
+		opacity: 0;
+		transform: scale(0.4);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.tm-btn:hover {
+	background: rgba(0, 0, 0, 0.06);
+}
+
+.tm-btn:active {
+	transform: scale(0.86);
+}
+
+.tm-btn:focus-visible {
+	outline: 2px solid #161616;
+	outline-offset: 2px;
+}
+
+.tm-btn[aria-checked="true"] {
+	background: #161616;
+	color: #fff;
+}
+
+.tm-btn.tm-pop {
+	animation: tm-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+	opacity: 1;
+}
+
+@keyframes tm-pop {
+	0% { transform: scale(0.7); }
+	60% { transform: scale(1.12); }
+	100% { transform: scale(1); }
+}
+
+.tm-btn svg,
+.tm-btn img {
+	display: block;
+}
+
+.tm-btn img {
+	height: 16px;
+	width: auto;
+	image-rendering: pixelated;
+}
+
+/* Tiny label that drops below a button on hover/focus */
+.tm-tip {
+	position: absolute;
+	top: calc(100% + 12px);
+	left: 50%;
+	padding: 4px 8px;
+	border-radius: 6px;
+	background: #161616;
+	color: #fff;
+	font-size: 9px;
+	font-weight: 500;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	pointer-events: none;
+	opacity: 0;
+	transform: translate(-50%, -4px) scale(0.85);
+	transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.tm-btn:hover .tm-tip,
+.tm-btn:focus-visible .tm-tip {
+	opacity: 1;
+	transform: translate(-50%, 0) scale(1);
+}
+
+/* ------------------------------------------------------------------ *
+ * Dark sites — flipped palette, detected from the page background
+ * ------------------------------------------------------------------ */
+
+html.tm-on-dark .tm-pill {
+	background: rgba(26, 26, 26, 0.72);
+	border-color: rgba(255, 255, 255, 0.14);
+	box-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.4),
+		0 14px 36px -14px rgba(0, 0, 0, 0.65);
+}
+
+html.tm-on-dark .tm-btn {
+	color: #ececec;
+}
+
+html.tm-on-dark .tm-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+html.tm-on-dark .tm-btn:focus-visible {
+	outline-color: #f2efe8;
+}
+
+html.tm-on-dark .tm-btn[aria-checked="true"] {
+	background: #f2efe8;
+	color: #141414;
+}
+
+html.tm-on-dark .tm-tip {
+	background: #f2efe8;
+	color: #141414;
+}
+
+/* ------------------------------------------------------------------ *
+ * Blob mode
+ * ------------------------------------------------------------------ */
+
+html.tm-mode-blob,
+html.tm-mode-blob * {
+	cursor: none !important;
+}
+
+/* Over the picker, hand control back to the normal cursor
+   (the blob itself melts away via JS). */
+html.tm-mode-blob .tm-root,
+html.tm-mode-blob .tm-root * {
+	cursor: default !important;
+}
+
+.tm-blob-stage {
+	position: fixed;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 2147483640;
+}
+
+.tm-defs {
+	position: absolute;
+}
+
+/* Opacity goes on the container *after* the goo filter, so the dots
+   fuse at full alpha first, then the merged blob fades as one. */
+.tm-goo {
+	position: absolute;
+	inset: 0;
+	filter: url(#tm-goo);
+	opacity: 0.5;
+}
+
+.tm-dot {
+	position: absolute;
+	top: 0;
+	left: 0;
+	background: #15120f;
+	border-radius: 50%;
+	will-change: transform;
+}
+
+html.tm-on-dark .tm-dot {
+	background: #f2efe8;
+}
+
+/* The lead blob slowly churns its silhouette while the goo filter
+   melts the trail into it — never a plain circle. */
+.tm-dot--main {
+	animation: tm-wobble 2.6s ease-in-out infinite;
+}
+
+.tm-dot--second {
+	animation: tm-wobble 3.4s ease-in-out infinite reverse;
+}
+
+@keyframes tm-wobble {
+	0%, 100% { border-radius: 44% 56% 48% 52% / 56% 44% 56% 44%; }
+	25%      { border-radius: 66% 34% 42% 58% / 38% 64% 36% 62%; }
+	50%      { border-radius: 36% 64% 64% 36% / 60% 36% 64% 40%; }
+	75%      { border-radius: 58% 42% 34% 66% / 44% 58% 42% 56%; }
+}
+
+/* ------------------------------------------------------------------ *
+ * Lens mode
+ * ------------------------------------------------------------------ */
+
+/* The lens is the only cursor — nothing else floats inside it. */
+html.tm-mode-lens,
+html.tm-mode-lens * {
+	cursor: none !important;
+}
+
+html.tm-mode-lens .tm-root,
+html.tm-mode-lens .tm-root * {
+	cursor: default !important;
+}
+
+.tm-lens {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 168px;
+	height: 168px;
+	border-radius: 50%;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 2147483630;
+	will-change: transform;
+	animation: tm-lens-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+	/* No rim, no shadow, no feather — just a clean cut circle of
+	   magnified page. */
+}
+
+@keyframes tm-lens-in {
+	from { scale: 0.2; opacity: 0; }
+	to   { scale: 1; opacity: 1; }
+}
+
+.tm-lens-inner {
+	position: absolute;
+	top: 0;
+	left: 0;
+	transform-origin: 0 0;
+	will-change: transform;
+}
+
+/* The faintest hint of a loupe — a whisper of rim and an even, flat
+   sheen (no off-center specular, nothing spherical) so the lens stays
+   findable over flat backgrounds without reading as a bubble. */
+.tm-lens-glass {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	pointer-events: none;
+	box-shadow:
+		inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+		inset 0 1px 0 rgba(255, 255, 255, 0.25);
+	background: linear-gradient(to bottom,
+		rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 45%);
+}
+
+html.tm-on-dark .tm-lens-glass {
+	box-shadow:
+		inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.07);
+	background: linear-gradient(to bottom,
+		rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 45%);
+}
+
+/* ------------------------------------------------------------------ *
+ * Reduced motion
+ * ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+	.tm-pill,
+	.tm-btn {
+		animation-duration: 0.01s;
+		animation-delay: 0s;
+	}
+
+	.tm-dot--main {
+		animation: none;
+	}
+
+	.tm-lens {
+		animation: none;
+	}
+}

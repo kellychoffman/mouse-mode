@@ -517,7 +517,7 @@
 			'<circle cx="10.8" cy="10.8" r="1.3" fill="currentColor" stroke="none"/></svg>',
 	};
 
-	var LABELS = { pixel: 'Pixel', blob: 'Blob', lens: 'Lens' };
+	var LABELS = { pixel: 'Pixel', blob: 'Blob', lens: 'Loupe' };
 
 	function setMode(mode, save) {
 		if (!EFFECTS[mode] || mode === current) return;

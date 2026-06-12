@@ -5,7 +5,7 @@ Everyone's adding dark mode switchers, but what about mouse mode? This is a tiny
 | Mode | What it does |
 | --- | --- |
 | **Blob** (default) | The native cursor disappears and a faded blob oozes after the pointer — six trailing metaballs fused with an SVG gooey filter. It squashes and stretches along its direction of travel, and over links it swells and turns near-solid so "clickable" reads instantly. Leave the mouse still for five seconds and it gets restless — droplets tear off in slow motion, drift, and dissolve. |
-| **Big** | The regular Mac cursors, just twice the size — the arrow everywhere and the white-glove pointing hand over links, both drawn smooth on a canvas at runtime with a soft shadow (CSS can't scale native cursors, so we redraw them faithfully at 2×). |
+| **Pixel** | Comically large pixel cursors — the classic arrow everywhere and the pixelated pointing hand over links (Noun Project icons, see credits below). CSS can't scale the native cursor, so the SVGs are rasterized to ~60px PNGs at runtime with a white halo so they read on dark sites. |
 | **Loupe** | A 168px magnifying glass that *is* the cursor (the native one hides) and enlarges the page 1.7× — a live, scaled clone of the page rendered inside the circle, so text stays vector-crisp. No border or drop shadow — just the faintest flat-top loupe glass (hairline rim, even sheen) so it stays findable over flat backgrounds. Near video embeds it stands down and hands you the regular cursor (iframes swallow mouse events, so it can't follow you in there). |
 
 Details:
@@ -38,6 +38,12 @@ add_filter( 'three_mice_should_load', '__return_true' );
 
 Open `demo.html` through any local web server — it's a fake dark homepage with
 the plugin's CSS/JS wired up.
+
+## Credits
+
+pixelated hand by Jamison Wieser from <a href="https://thenounproject.com/browse/icons/term/pixelated-hand/" target="_blank" title="pixelated hand Icons">Noun Project</a> (CC BY 3.0)
+
+Cursor by Stefan Parnarov from <a href="https://thenounproject.com/browse/icons/term/cursor/" target="_blank" title="Cursor Icons">Noun Project</a> (CC BY 3.0)
 
 ## Notes
 

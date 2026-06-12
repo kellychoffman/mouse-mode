@@ -4,8 +4,8 @@ Everyone's adding dark mode switchers, but what about mouse mode? This is a tiny
 
 | Mode | What it does |
 | --- | --- |
-| **Blob** (default) | The native cursor disappears and a faded blob oozes after the pointer — six trailing metaballs fused with an SVG gooey filter. It squashes and stretches along its direction of travel, and over links it swells and turns near-solid so "clickable" reads instantly. Leave the mouse still for five seconds and it gets restless — droplets tear off in slow motion, drift, and dissolve. |
-| **Pixel** | Comically large pixel cursors — the classic arrow everywhere and the pixelated pointing hand over links (Noun Project icons, see credits below). CSS can't scale the native cursor, so the SVGs are rasterized to ~60px PNGs at runtime with a white halo so they read on dark sites. |
+| **Blob** (default) | The native cursor disappears and a faded blob oozes after the pointer — six trailing metaballs fused with an SVG gooey filter. It squashes and stretches along its direction of travel, and over links it swells and turns near-solid so "clickable" reads instantly. Whip it around fast and droplets shear off the back and fade; leave the mouse still for five seconds and a single droplet slowly oozes free instead. |
+| **Pixel** | Comically large white pixel cursors — the classic arrow everywhere and the pixelated pointing hand over links (Noun Project icons, see credits below). CSS can't scale the native cursor, so the SVGs are rasterized to ~60px PNGs at runtime, filled white with a thin dark outline so they read on any background. |
 | **Loupe** | A 168px magnifying glass that *is* the cursor (the native one hides) and enlarges the page 1.7× — a live, scaled clone of the page rendered inside the circle, so text stays vector-crisp. No border or drop shadow — just the faintest flat-top loupe glass (hairline rim, even sheen) so it stays findable over flat backgrounds. Near video embeds it stands down and hands you the regular cursor (iframes swallow mouse events, so it can't follow you in there). |
 
 Details:

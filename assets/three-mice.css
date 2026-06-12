@@ -103,15 +103,12 @@
 	100% { transform: scale(1); }
 }
 
-.tm-btn svg,
-.tm-btn img {
+.tm-btn svg {
 	display: block;
 }
 
-.tm-btn img {
-	height: 17px;
-	width: auto;
-	/* The arrow's mass hugs its left edge; nudge right to center optically. */
+/* The arrow's mass hugs its left edge; nudge right to center optically. */
+.tm-btn--pixel svg {
 	transform: translateX(2px);
 }
 

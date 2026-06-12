@@ -153,24 +153,16 @@
 	}
 
 	/* ------------------------------------------------------------------ *
-	 * Effect: pixel — the regular Mac arrow, just twice the size
-	 *
-	 * CSS can't scale the native cursor, so we draw a faithful smooth
-	 * macOS-style arrow (black body, white rim, soft shadow) on a canvas
-	 * at 2x and serve it as a PNG cursor.
-	 * ------------------------------------------------------------------ */
-
-	/* ------------------------------------------------------------------ *
-	 * Effect: pixel — comically large pixel cursors
+	 * Effect: pixel — comically large white pixel cursors
 	 *
 	 * Cursor by Stefan Parnarov, pixelated hand by Jamison Wieser — both
 	 * Noun Project, CC BY 3.0 (see README). The browser can't scale the
-	 * native cursor, so the SVGs are rasterized to big PNGs at runtime,
-	 * with a white halo stamped around them so they read on dark sites.
+	 * native cursor, so the SVGs are rasterized to big PNGs at runtime —
+	 * filled white with a thin dark outline, the way a real white system
+	 * cursor reads on any background.
 	 * ------------------------------------------------------------------ */
 
-	var ARROW_SVG =
-		'<svg xmlns="http://www.w3.org/2000/svg" viewBox="19 0 66 100" width="37" height="56">' +
+	var ARROW_SHAPES =
 		'<rect x="31" y="11" width="6" height="6"/><rect x="37" y="17" width="6" height="6"/>' +
 		'<rect x="43" y="23" width="6" height="6"/><rect x="49" y="29" width="6" height="6"/>' +
 		'<rect x="55" y="35" width="6" height="6"/><rect x="61" y="41" width="6" height="6"/>' +
@@ -180,8 +172,11 @@
 		'<rect x="31" y="71" width="6" height="6"/><rect x="61" y="71" width="6" height="12"/>' +
 		'<rect x="67" y="83" width="6" height="11"/><rect x="49" y="83" width="6" height="11"/>' +
 		'<polygon points="55,94 55,100 61,100 67,100 67,94 61,94"/>' +
-		'<polygon points="85,65 85,59 79,59 79,53 73,53 73,59 55,59 55,71 61,71 61,65"/>' +
-		'</svg>';
+		'<polygon points="85,65 85,59 79,59 79,53 73,53 73,59 55,59 55,71 61,71 61,65"/>';
+
+	var ARROW_SVG =
+		'<svg xmlns="http://www.w3.org/2000/svg" viewBox="19 0 66 100" width="37" height="56">' +
+		ARROW_SHAPES + '</svg>';
 
 	var HAND_SVG =
 		'<svg xmlns="http://www.w3.org/2000/svg" viewBox="33 28 34 44" width="40" height="52">' +
@@ -192,8 +187,8 @@
 		'53,48 55,48 55,42 59,42 59,50 61,50 61,44 63,44 63,46 65,46 65,58 67,58 67,46"/>' +
 		'</svg>';
 
-	// SVG → PNG with a white halo: stamp a white silhouette of the shape
-	// in a ring of offsets, then draw the black original on top.
+	// SVG → white PNG with a thin dark outline: stamp a dark silhouette of
+	// the shape in a tight ring, then drop the white silhouette on top.
 	function rasterizeCursor(svg, done) {
 		var img = new Image();
 		img.onload = function () {
@@ -203,20 +198,26 @@
 			canvas.height = img.height + PAD * 2;
 			var ctx = canvas.getContext('2d');
 
-			var sil = document.createElement('canvas');
-			sil.width = img.width;
-			sil.height = img.height;
-			var sctx = sil.getContext('2d');
-			sctx.drawImage(img, 0, 0);
-			sctx.globalCompositeOperation = 'source-in';
-			sctx.fillStyle = '#fff';
-			sctx.fillRect(0, 0, sil.width, sil.height);
+			function silhouette(color) {
+				var s = document.createElement('canvas');
+				s.width = img.width;
+				s.height = img.height;
+				var sc = s.getContext('2d');
+				sc.drawImage(img, 0, 0);
+				sc.globalCompositeOperation = 'source-in';
+				sc.fillStyle = color;
+				sc.fillRect(0, 0, s.width, s.height);
+				return s;
+			}
+
+			var dark = silhouette('rgba(0,0,0,0.8)');
+			var white = silhouette('#fff');
 
 			for (var a = 0; a < 16; a++) {
 				var ang = (a * Math.PI) / 8;
-				ctx.drawImage(sil, PAD + Math.cos(ang) * 2, PAD + Math.sin(ang) * 2);
+				ctx.drawImage(dark, PAD + Math.cos(ang) * 1.5, PAD + Math.sin(ang) * 1.5);
 			}
-			ctx.drawImage(img, PAD, PAD);
+			ctx.drawImage(white, PAD, PAD);
 			done(canvas.toDataURL('image/png'));
 		};
 		img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
@@ -226,7 +227,6 @@
 		var styleEl = null;
 		var arrowPNG = null;
 		var handPNG = null;
-		var iconWaiters = [];
 
 		function buildStyle() {
 			if (!arrowPNG || !handPNG) return;
@@ -247,10 +247,6 @@
 		rasterizeCursor(ARROW_SVG, function (png) {
 			arrowPNG = png;
 			buildStyle();
-			iconWaiters.forEach(function (cb) {
-				cb(png);
-			});
-			iconWaiters = [];
 		});
 		rasterizeCursor(HAND_SVG, function (png) {
 			handPNG = png;
@@ -263,10 +259,6 @@
 			},
 			disable: function () {
 				document.documentElement.classList.remove('tm-mode-pixel');
-			},
-			icon: function (cb) {
-				if (arrowPNG) cb(arrowPNG);
-				else iconWaiters.push(cb);
 			},
 		};
 	})();
@@ -325,31 +317,44 @@
 			document.body.appendChild(stage);
 		}
 
-		// The longer the pointer sits still, the more restless the blob:
-		// little droplets detach, drift off, and dissolve into nothing.
-		function spawnDrop(now) {
+		// A droplet detaches from the blob. Two flavours:
+		//  - idle ooze: glacial, drifts a hair, dissolves over ~12s.
+		//  - fling: shears off the back of a fast-moving blob and fades fast.
+		function spawnDrop(now, fling) {
 			lastSpawn = now;
 			var el = document.createElement('div');
 			el.className = 'tm-dot';
 			// Droplets must stay chunky: the goo filter's alpha crush
 			// erases anything smaller than ~18px, so drops start large
 			// and the threshold itself swallows them at the end of life.
-			var size = 22 + Math.random() * 8;
+			var size = 20 + Math.random() * 8;
 			el.style.width = size + 'px';
 			el.style.height = size + 'px';
 			goo.appendChild(el);
-			var ang = Math.random() * Math.PI * 2;
-			// Glacial: the drop spends ages pulling a taffy neck out of
-			// the blob before it finally oozes free.
-			var speed = 0.07 + Math.random() * 0.08;
+
+			var ang, sp;
+			if (fling) {
+				// Sling off roughly opposite the blob's travel, like wet
+				// droplets thrown from a whipping ball.
+				ang = Math.atan2(vy, vx) + Math.PI + (Math.random() - 0.5) * 1.6;
+				sp = 1.4 + Math.random() * 2.2;
+			} else {
+				ang = Math.random() * Math.PI * 2;
+				// Glacial: the drop spends ages pulling a taffy neck out of
+				// the blob before it finally oozes free.
+				sp = 0.07 + Math.random() * 0.08;
+			}
 			drops.push({
 				el: el,
 				size: size,
 				// Start tucked into the blob so the pull-away reads.
 				x: parts[0].x + Math.cos(ang) * SIZES[0] * 0.3,
 				y: parts[0].y + Math.sin(ang) * SIZES[0] * 0.3,
-				vx: Math.cos(ang) * speed,
-				vy: Math.sin(ang) * speed - 0.03, // faint upward drift
+				vx: Math.cos(ang) * sp,
+				vy: Math.sin(ang) * sp - (fling ? 0 : 0.03),
+				// Fling drops fade in ~0.6-1s; idle drops crawl out over ~12s.
+				decay: fling ? 0.018 + Math.random() * 0.012 : 0.0014,
+				damp: fling ? 0.93 : 0.999,
 				life: 1,
 			});
 		}
@@ -377,21 +382,28 @@
 				lastMove = now;
 			}
 			var idle = now - lastMove;
+			var moveSpeed = Math.sqrt(vx * vx + vy * vy);
 
-			// After a good five seconds of stillness, a single droplet at
-			// a time oozes free in slow motion — the next one waits for
-			// the current one to fully dissolve.
-			if (
-				!REDUCED_MOTION && pointer.seen && idle > 5000 &&
-				drops.length === 0 && fade > 0.5 &&
-				now - lastSpawn > 1500
-			) {
-				spawnDrop(now);
+			if (!REDUCED_MOTION && pointer.seen && fade > 0.5 && !pointer.away) {
+				// Fling: the faster the blob travels, the better the odds a
+				// droplet shears off the back this frame, then quickly fades.
+				if (
+					moveSpeed > 5 && drops.length < 14 &&
+					Math.random() < Math.min(0.55, (moveSpeed - 5) * 0.03)
+				) {
+					spawnDrop(now, true);
+				} else if (
+					// Idle ooze: after five still seconds, one slow drop at a
+					// time — the next waits for the current to dissolve.
+					idle > 5000 && drops.length === 0 && now - lastSpawn > 1500
+				) {
+					spawnDrop(now, false);
+				}
 			}
 
 			for (var d = drops.length - 1; d >= 0; d--) {
 				var dr = drops[d];
-				dr.life -= 0.0014; // ~12s of glacial drift
+				dr.life -= dr.decay;
 				if (dr.life <= 0) {
 					goo.removeChild(dr.el);
 					drops.splice(d, 1);
@@ -399,8 +411,8 @@
 				}
 				dr.x += dr.vx;
 				dr.y += dr.vy;
-				dr.vx *= 0.999;
-				dr.vy *= 0.999;
+				dr.vx *= dr.damp;
+				dr.vy *= dr.damp;
 				// Scale floor keeps the drop above the goo threshold for
 				// most of its life; it winks out near the end.
 				var ds = 0.5 + 0.5 * dr.life;
@@ -594,6 +606,9 @@
 	var buttons = {};
 
 	var ICONS = {
+		pixel:
+			'<svg viewBox="17 -2 70 104" width="13" height="18" aria-hidden="true" ' +
+			'fill="currentColor">' + ARROW_SHAPES + '</svg>',
 		blob:
 			'<svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true">' +
 			'<path fill="currentColor" d="M9 2.4c2.9 0 5.9 1.7 6.3 4.6.4 2.8-1.1 4.3-1.5 6.2-.4 1.9-2 3-4.3 2.7-2.3-.3-2.7-2-4.6-2.8C3 12.3 1.9 10.8 2.3 8.6 2.8 5.2 6.1 2.4 9 2.4Z"/></svg>',
@@ -646,18 +661,7 @@
 			btn.setAttribute('aria-checked', 'false');
 			btn.setAttribute('aria-label', LABELS[mode] + ' cursor');
 
-			if (mode === 'pixel') {
-				// The icon is the actual cursor image — an honest preview.
-				var img = document.createElement('img');
-				img.alt = '';
-				img.height = 16;
-				pixel.icon(function (url) {
-					img.src = url;
-				});
-				btn.appendChild(img);
-			} else {
-				btn.innerHTML = ICONS[mode];
-			}
+			btn.innerHTML = ICONS[mode];
 
 			var tip = document.createElement('span');
 			tip.className = 'tm-tip';

@@ -350,17 +350,17 @@
 			el.style.height = size + 'px';
 			goo.appendChild(el);
 			var ang = Math.random() * Math.PI * 2;
-			// Barely faster than still: the drop spends a long moment
-			// pulling a taffy neck out of the blob before it breaks free.
-			var speed = 0.12 + Math.random() * 0.18;
+			// Glacial: the drop spends ages pulling a taffy neck out of
+			// the blob before it finally oozes free.
+			var speed = 0.07 + Math.random() * 0.08;
 			drops.push({
 				el: el,
 				size: size,
-				// Start at the blob's edge so the drop visibly tears away.
-				x: parts[0].x + Math.cos(ang) * SIZES[0] * 0.4,
-				y: parts[0].y + Math.sin(ang) * SIZES[0] * 0.4,
+				// Start tucked into the blob so the pull-away reads.
+				x: parts[0].x + Math.cos(ang) * SIZES[0] * 0.3,
+				y: parts[0].y + Math.sin(ang) * SIZES[0] * 0.3,
 				vx: Math.cos(ang) * speed,
-				vy: Math.sin(ang) * speed - 0.06, // faint upward drift
+				vy: Math.sin(ang) * speed - 0.03, // faint upward drift
 				life: 1,
 			});
 		}
@@ -402,7 +402,7 @@
 
 			for (var d = drops.length - 1; d >= 0; d--) {
 				var dr = drops[d];
-				dr.life -= 0.0022; // ~7.5s of slow-motion drift
+				dr.life -= 0.0014; // ~12s of glacial drift
 				if (dr.life <= 0) {
 					goo.removeChild(dr.el);
 					drops.splice(d, 1);
@@ -410,8 +410,8 @@
 				}
 				dr.x += dr.vx;
 				dr.y += dr.vy;
-				dr.vx *= 0.998;
-				dr.vy *= 0.998;
+				dr.vx *= 0.999;
+				dr.vy *= 0.999;
 				// Scale floor keeps the drop above the goo threshold for
 				// most of its life; it winks out near the end.
 				var ds = 0.5 + 0.5 * dr.life;

@@ -111,6 +111,8 @@
 .tm-btn img {
 	height: 17px;
 	width: auto;
+	/* The arrow's mass hugs its left edge; nudge right to center optically. */
+	transform: translateX(2px);
 }
 
 /* Tiny label that drops below a button on hover/focus */

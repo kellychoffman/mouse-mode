@@ -472,7 +472,13 @@
 			rebuildClone();
 			lx = pointer.x;
 			ly = pointer.y;
-			fade = 1;
+			// Start transparent and fade in via the tick lerp, and
+			// pre-position at the pointer so the first frame never paints
+			// in the corner — both of which would otherwise read as a swoop.
+			fade = 0;
+			el.style.opacity = '0';
+			el.style.transform =
+				'translate3d(' + (lx - R) + 'px,' + (ly - R) + 'px,0)';
 			el.style.display = '';
 			el.style.visibility = pointer.seen ? 'visible' : 'hidden';
 			document.documentElement.classList.add('tm-mode-lens');

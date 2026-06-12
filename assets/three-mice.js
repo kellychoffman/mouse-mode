@@ -389,13 +389,13 @@
 			}
 			var idle = now - lastMove;
 
-			// Droplets start after a good five seconds of stillness and
-			// drift off in slow motion, coming a little more often the
-			// longer the mouse rests.
+			// After a good five seconds of stillness, a single droplet at
+			// a time oozes free in slow motion — the next one waits for
+			// the current one to fully dissolve.
 			if (
 				!REDUCED_MOTION && pointer.seen && idle > 5000 &&
-				drops.length < 8 && fade > 0.5 &&
-				now - lastSpawn > Math.max(1200, 3000 - (idle - 5000) * 0.15)
+				drops.length === 0 && fade > 0.5 &&
+				now - lastSpawn > 1500
 			) {
 				spawnDrop(now);
 			}

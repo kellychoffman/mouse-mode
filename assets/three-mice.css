@@ -235,11 +235,13 @@ html.tm-on-dark .tm-dot {
 	animation: tm-wobble 3.4s ease-in-out infinite reverse;
 }
 
+/* Gentle: always within a few percent of a circle, so the blob reads
+   round and organic rather than geometric. */
 @keyframes tm-wobble {
-	0%, 100% { border-radius: 44% 56% 48% 52% / 56% 44% 56% 44%; }
-	25%      { border-radius: 66% 34% 42% 58% / 38% 64% 36% 62%; }
-	50%      { border-radius: 36% 64% 64% 36% / 60% 36% 64% 40%; }
-	75%      { border-radius: 58% 42% 34% 66% / 44% 58% 42% 56%; }
+	0%, 100% { border-radius: 48% 52% 50% 50% / 53% 47% 52% 48%; }
+	25%      { border-radius: 55% 45% 48% 52% / 47% 55% 45% 53%; }
+	50%      { border-radius: 46% 54% 55% 45% / 52% 46% 55% 45%; }
+	75%      { border-radius: 52% 48% 45% 55% / 48% 53% 46% 54%; }
 }
 
 /* ------------------------------------------------------------------ *

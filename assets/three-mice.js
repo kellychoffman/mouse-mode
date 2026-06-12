@@ -30,6 +30,7 @@
 		y: window.innerHeight / 3,
 		hover: false,
 		overPicker: false,
+		overEmbed: false,
 		seen: false,
 	};
 
@@ -59,12 +60,28 @@
 			pointer.x = e.clientX;
 			pointer.y = e.clientY;
 			pointer.seen = true;
+			pointer.overEmbed = false;
 			var t = e.target;
 			pointer.hover =
 				isInteractive(t) || nearInteractive(e.clientX, e.clientY);
 			pointer.overPicker = !!(t && t.closest && t.closest('.tm-root'));
 		},
 		{ passive: true }
+	);
+
+	// Iframes (YouTube embeds etc.) swallow every mouse event, so the page
+	// stops hearing mousemove the moment the pointer crosses onto one and
+	// the blob/loupe would freeze mid-air. We catch the crossing itself —
+	// the parent still gets a mouseover targeting the iframe element —
+	// and let the effects melt away until the pointer re-emerges.
+	document.addEventListener(
+		'mouseover',
+		function (e) {
+			var tag = e.target && e.target.tagName;
+			pointer.overEmbed =
+				tag === 'IFRAME' || tag === 'EMBED' || tag === 'OBJECT';
+		},
+		{ passive: true, capture: true }
 	);
 
 	function pageBackground() {
@@ -294,9 +311,9 @@
 		function tick() {
 			if (pointer.seen) stage.style.visibility = 'visible';
 
-			// Melt away while the pointer is over the picker, where the
-			// normal cursor takes over.
-			fade += ((pointer.overPicker ? 0 : 1) - fade) * 0.2;
+			// Melt away over the picker (normal cursor takes over) and
+			// over embeds (which stop reporting the pointer entirely).
+			fade += ((pointer.overPicker || pointer.overEmbed ? 0 : 1) - fade) * 0.2;
 			stage.style.opacity = fade.toFixed(3);
 
 			var now = performance.now();
@@ -453,8 +470,9 @@
 		function tick() {
 			if (pointer.seen) el.style.visibility = 'visible';
 
-			// Step aside while choosing a cursor in the picker.
-			fade += ((pointer.overPicker ? 0 : 1) - fade) * 0.2;
+			// Step aside while choosing a cursor in the picker, and over
+			// embeds (which stop reporting the pointer entirely).
+			fade += ((pointer.overPicker || pointer.overEmbed ? 0 : 1) - fade) * 0.2;
 			el.style.opacity = fade.toFixed(3);
 
 			lx += (pointer.x - lx) * 0.3;

@@ -1,10 +1,10 @@
 /**
- * Three Mice — a tiny cursor wardrobe.
+ * Mouse Mode — a tiny cursor wardrobe.
  *
- * Three switchable cursors, picked from a little pill in the upper right:
- *   blob  — a faded blob that oozes after the pointer (gooey metaballs)
- *   pixel — Susan Kare-style pointing hand, fat 2x pixels
- *   lens  — a 112px magnifying glass that enlarges a live clone of the page
+ * Three mouse modes, picked from a little pill in the upper right:
+ *   blob   — a faded blob that oozes after the pointer (gooey metaballs)
+ *   normal — the plain default cursor, no effect (for the normies)
+ *   lens   — a 112px magnifying loupe that enlarges a live clone of the page
  */
 (function () {
 	'use strict';
@@ -12,11 +12,11 @@
 	// Mouse-driven effects make no sense on touch devices.
 	var fine = window.matchMedia ? window.matchMedia('(pointer: fine)') : null;
 	if (fine && !fine.matches) return;
-	if (window.__threeMice) return;
-	window.__threeMice = true;
+	if (window.__mouseMode) return;
+	window.__mouseMode = true;
 
-	var STORAGE_KEY = 'three-mice:mode';
-	var ORDER = ['blob', 'pixel', 'lens'];
+	var STORAGE_KEY = 'mouse-mode:mode';
+	var ORDER = ['blob', 'normal', 'lens'];
 	var DEFAULT_MODE = 'blob';
 	var INTERACTIVE =
 		'a, button, input, textarea, select, summary, label, [role="button"], [onclick]';
@@ -153,115 +153,13 @@
 	}
 
 	/* ------------------------------------------------------------------ *
-	 * Effect: pixel — comically large white pixel cursors
-	 *
-	 * Cursor by Stefan Parnarov, pixelated hand by Jamison Wieser — both
-	 * Noun Project, CC BY 3.0 (see README). The browser can't scale the
-	 * native cursor, so the SVGs are rasterized to big PNGs at runtime —
-	 * filled white with a thin dark outline, the way a real white system
-	 * cursor reads on any background.
+	 * Effect: normal — the plain default cursor, no effect at all
 	 * ------------------------------------------------------------------ */
 
-	var ARROW_SHAPES =
-		'<rect x="31" y="11" width="6" height="6"/><rect x="37" y="17" width="6" height="6"/>' +
-		'<rect x="43" y="23" width="6" height="6"/><rect x="49" y="29" width="6" height="6"/>' +
-		'<rect x="55" y="35" width="6" height="6"/><rect x="61" y="41" width="6" height="6"/>' +
-		'<rect x="67" y="47" width="6" height="6"/>' +
-		'<polygon points="25,11 31,11 31,5 25,5 25,0 19,0 19,89 25,89 25,83 31,83 31,77 25,77"/>' +
-		'<rect x="43" y="71" width="6" height="12"/><rect x="37" y="65" width="6" height="6"/>' +
-		'<rect x="31" y="71" width="6" height="6"/><rect x="61" y="71" width="6" height="12"/>' +
-		'<rect x="67" y="83" width="6" height="11"/><rect x="49" y="83" width="6" height="11"/>' +
-		'<polygon points="55,94 55,100 61,100 67,100 67,94 61,94"/>' +
-		'<polygon points="85,65 85,59 79,59 79,53 73,53 73,59 55,59 55,71 61,71 61,65"/>';
-
-	var ARROW_SVG =
-		'<svg xmlns="http://www.w3.org/2000/svg" viewBox="19 0 66 100" width="37" height="56">' +
-		ARROW_SHAPES + '</svg>';
-
-	var HAND_SVG =
-		'<svg xmlns="http://www.w3.org/2000/svg" viewBox="33 28 34 44" width="40" height="52">' +
-		'<polygon points="65,46 65,44 63,44 63,42 59,42 59,40 53,40 53,38 49,38 49,30 47,30 47,28 ' +
-		'43,28 43,30 41,30 41,48 39,48 39,46 33,46 33,54 35,54 35,58 37,58 37,62 39,62 39,66 41,66 ' +
-		'41,72 63,72 63,64 65,64 65,58 63,58 63,64 61,64 61,70 43,70 43,66 41,66 41,62 39,62 39,58 ' +
-		'37,58 37,54 35,54 35,48 39,48 39,50 41,50 41,56 43,56 43,30 47,30 47,48 49,48 49,40 53,40 ' +
-		'53,48 55,48 55,42 59,42 59,50 61,50 61,44 63,44 63,46 65,46 65,58 67,58 67,46"/>' +
-		'</svg>';
-
-	// SVG → white PNG with a thin dark outline: stamp a dark silhouette of
-	// the shape in a tight ring, then drop the white silhouette on top.
-	function rasterizeCursor(svg, done) {
-		var img = new Image();
-		img.onload = function () {
-			var PAD = 4;
-			var canvas = document.createElement('canvas');
-			canvas.width = img.width + PAD * 2;
-			canvas.height = img.height + PAD * 2;
-			var ctx = canvas.getContext('2d');
-
-			function silhouette(color) {
-				var s = document.createElement('canvas');
-				s.width = img.width;
-				s.height = img.height;
-				var sc = s.getContext('2d');
-				sc.drawImage(img, 0, 0);
-				sc.globalCompositeOperation = 'source-in';
-				sc.fillStyle = color;
-				sc.fillRect(0, 0, s.width, s.height);
-				return s;
-			}
-
-			var dark = silhouette('rgba(0,0,0,0.8)');
-			var white = silhouette('#fff');
-
-			for (var a = 0; a < 16; a++) {
-				var ang = (a * Math.PI) / 8;
-				ctx.drawImage(dark, PAD + Math.cos(ang) * 1.5, PAD + Math.sin(ang) * 1.5);
-			}
-			ctx.drawImage(white, PAD, PAD);
-			done(canvas.toDataURL('image/png'));
-		};
-		img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-	}
-
-	var pixel = (function () {
-		var styleEl = null;
-		var arrowPNG = null;
-		var handPNG = null;
-
-		function buildStyle() {
-			if (!arrowPNG || !handPNG) return;
-			if (!styleEl) {
-				styleEl = document.createElement('style');
-				document.head.appendChild(styleEl);
-			}
-			styleEl.textContent =
-				'html.tm-mode-pixel, html.tm-mode-pixel * {' +
-				' cursor: url("' + arrowPNG + '") 4 4, auto !important; }' +
-				'html.tm-mode-pixel :is(' + INTERACTIVE + ') {' +
-				' cursor: url("' + handPNG + '") 18 4, pointer !important; }' +
-				// Over the picker itself, fall back to the normal cursor.
-				'html.tm-mode-pixel .tm-root, html.tm-mode-pixel .tm-root * {' +
-				' cursor: default !important; }';
-		}
-
-		rasterizeCursor(ARROW_SVG, function (png) {
-			arrowPNG = png;
-			buildStyle();
-		});
-		rasterizeCursor(HAND_SVG, function (png) {
-			handPNG = png;
-			buildStyle();
-		});
-
-		return {
-			enable: function () {
-				document.documentElement.classList.add('tm-mode-pixel');
-			},
-			disable: function () {
-				document.documentElement.classList.remove('tm-mode-pixel');
-			},
-		};
-	})();
+	var normal = {
+		enable: function () {},
+		disable: function () {},
+	};
 
 	/* ------------------------------------------------------------------ *
 	 * Effect: blob — gooey trailing blob that oozes after the pointer
@@ -601,14 +499,14 @@
 	 * The picker pill
 	 * ------------------------------------------------------------------ */
 
-	var EFFECTS = { pixel: pixel, blob: blob, lens: lens };
+	var EFFECTS = { normal: normal, blob: blob, lens: lens };
 	var current = null;
 	var buttons = {};
 
 	var ICONS = {
-		pixel:
-			'<svg viewBox="17 -2 70 104" width="13" height="18" aria-hidden="true" ' +
-			'fill="currentColor">' + ARROW_SHAPES + '</svg>',
+		normal:
+			'<svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true">' +
+			'<path fill="currentColor" d="M4 2.2 5.2 14.4 7.7 11.1 9.8 15.8 11.6 15 9.5 10.4 13.6 9.8Z"/></svg>',
 		blob:
 			'<svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true">' +
 			'<path fill="currentColor" d="M9 2.4c2.9 0 5.9 1.7 6.3 4.6.4 2.8-1.1 4.3-1.5 6.2-.4 1.9-2 3-4.3 2.7-2.3-.3-2.7-2-4.6-2.8C3 12.3 1.9 10.8 2.3 8.6 2.8 5.2 6.1 2.4 9 2.4Z"/></svg>',
@@ -619,7 +517,7 @@
 			'<circle cx="10.8" cy="10.8" r="1.3" fill="currentColor" stroke="none"/></svg>',
 	};
 
-	var LABELS = { pixel: 'Pixel', blob: 'Blob', lens: 'Loupe' };
+	var LABELS = { normal: 'Normal', blob: 'Blob', lens: 'Loupe' };
 
 	function setMode(mode, save) {
 		if (!EFFECTS[mode] || mode === current) return;

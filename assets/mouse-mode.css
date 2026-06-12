@@ -1,4 +1,4 @@
-/* Three Mice — cursor wardrobe styles */
+/* Mouse Mode — cursor wardrobe styles */
 
 /* ------------------------------------------------------------------ *
  * Picker pill, upper right
@@ -108,7 +108,7 @@
 }
 
 /* The arrow's mass hugs its left edge; nudge right to center optically. */
-.tm-btn--pixel svg {
+.tm-btn--normal svg {
 	transform: translateX(2px);
 }
 
@@ -124,6 +124,9 @@
 	font-size: 9px;
 	font-weight: 500;
 	letter-spacing: 0.18em;
+	/* letter-spacing adds a trailing gap after the last letter, which
+	   reads as extra right padding; indent by one step to re-center. */
+	text-indent: 0.18em;
 	text-transform: uppercase;
 	white-space: nowrap;
 	pointer-events: none;

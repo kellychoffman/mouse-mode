@@ -1,13 +1,13 @@
 # Three Mice 🐭🐭🐭
 
-A tiny cursor wardrobe for your homepage. A little pill appears in the upper
+A tiny cursor wardrobe for your WordPress site's homepage. A little pill appears in the upper
 right corner with three mice to choose from:
 
 | Mode | What it does |
 | --- | --- |
 | **Blob** (default) | The native cursor disappears and a faded blob oozes after the pointer — six trailing metaballs fused with an SVG gooey filter. It squashes and stretches along its direction of travel, churns its silhouette as it sits, and over links it swells and turns near-solid so "clickable" reads instantly. |
 | **Pixel** | The classic chunky pixel arrow at 2× scale — white fill, black outline, notched tail — with the classic deep-knuckled pointing hand over links and buttons. Drawn from 1-bit bitmaps onto a canvas at runtime, so every pixel is a fat, honest pixel. |
-| **Lens** | A 168px magnifying glass that *is* the cursor (the native one hides) and enlarges the page 1.7× — a live, scaled clone of the page rendered inside the circle, so text stays vector-crisp. No border or drop shadow — just a whisper of glass (faint rim light and a soft specular catch) so it stays findable over flat backgrounds. |
+| **Loupe** | A 168px magnifying glass that *is* the cursor (the native one hides) and enlarges the page 1.7× — a live, scaled clone of the page rendered inside the circle, so text stays vector-crisp. No border or drop shadow — just a whisper of glass (faint rim light and a soft specular catch) so it stays findable over flat backgrounds. |
 
 Details:
 

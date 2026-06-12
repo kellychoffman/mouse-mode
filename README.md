@@ -1,6 +1,6 @@
 # Three Mice 🐭🐭🐭
 
-Everyone's adding dark mode switchers, but what about mouse mode? This is tiny cursor wardrobe for your site's homepage. A little pill appears in the upper right corner with three mice to choose from:
+Everyone's adding dark mode switchers, but what about mouse mode? This is a tiny cursor wardrobe for your site's homepage. A little pill appears in the upper right corner with three mice to choose from:
 
 | Mode | What it does |
 | --- | --- |

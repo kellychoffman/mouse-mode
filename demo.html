@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mouse Mode — demo</title>
-<link rel="stylesheet" href="assets/mouse-mode.css?v=21">
+<link rel="stylesheet" href="assets/mouse-mode.css?v=24">
 <style>
 	/* Stand-in for kelly.blog: light, minimal, photo-heavy */
 	* { box-sizing: border-box; }
@@ -40,6 +40,31 @@
 </style>
 </head>
 <body>
+<!-- Mock WordPress admin bar to test cursor + z-index behavior -->
+<style>
+	#wpadminbar { position: fixed; top: 0; left: 0; right: 0; height: 32px;
+		background: #1d2327; color: #c3c4c7; z-index: 99999;
+		font: 13px/32px -apple-system, sans-serif; display: flex; align-items: center; }
+	#wpadminbar a { color: #c3c4c7; text-decoration: none; padding: 0 12px; }
+	#wpadminbar .bell { margin-left: auto; position: relative; padding: 0 14px; }
+	#wpadminbar .panel { position: absolute; top: 32px; right: 0; width: 300px;
+		background: #2c3338; border: 1px solid #3c434a; border-radius: 0 0 4px 4px;
+		padding: 14px; line-height: 1.5; display: none; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+	#wpadminbar .panel.open { display: block; }
+	body { padding-top: 32px; }
+</style>
+<div id="wpadminbar">
+	<a href="#">kelly.blog</a>
+	<a href="#">+ New</a>
+	<a href="#" class="bell" onclick="this.querySelector('.panel').classList.toggle('open');return false;">🔔 3
+		<span class="panel">
+			<strong>Notifications</strong><br>
+			New comment on "Morning laps"<br>
+			Plugin update available<br>
+			Backup completed
+		</span>
+	</a>
+</div>
 <div class="wrap">
 	<header>
 		<div class="avatar"></div>
@@ -85,6 +110,6 @@
 		recursive to write about.</p>
 	</article>
 </div>
-<script src="assets/mouse-mode.js?v=21" defer></script>
+<script src="assets/mouse-mode.js?v=24" defer></script>
 </body>
 </html>

@@ -95,7 +95,10 @@
 			var t = e.target;
 			pointer.hover =
 				isInteractive(t) || nearInteractive(e.clientX, e.clientY);
-			pointer.overPicker = !!(t && t.closest && t.closest('.tm-root'));
+			// Over our own picker, or the WordPress admin bar (and any menu
+			// it opens), the effect stands down and the native cursor returns.
+			pointer.overPicker =
+				!!(t && t.closest && t.closest('.tm-root, #wpadminbar'));
 		},
 		{ passive: true }
 	);
@@ -524,12 +527,19 @@
 	};
 
 	var LABELS = { normal: 'Normal', blob: 'Blob', lens: 'Loupe' };
+	var glassChip = null;
 
 	function setMode(mode, save) {
 		if (!EFFECTS[mode] || mode === current) return;
 		if (current) EFFECTS[current].disable();
 		current = mode;
 		EFFECTS[mode].enable();
+
+		// Glide the glass chip to the selected option (36px btn + 2px gap).
+		if (glassChip) {
+			glassChip.style.transform =
+				'translateX(' + ORDER.indexOf(mode) * 38 + 'px)';
+		}
 
 		Object.keys(buttons).forEach(function (key) {
 			var on = key === mode;
@@ -556,6 +566,12 @@
 		pill.className = 'tm-pill';
 		pill.setAttribute('role', 'radiogroup');
 		pill.setAttribute('aria-label', 'Cursor style');
+
+		// First child so the buttons paint above it.
+		glassChip = document.createElement('div');
+		glassChip.className = 'tm-glass-chip';
+		glassChip.setAttribute('aria-hidden', 'true');
+		pill.appendChild(glassChip);
 
 		ORDER.forEach(function (mode) {
 			var btn = document.createElement('button');
@@ -598,6 +614,12 @@
 
 		root.appendChild(pill);
 		document.body.appendChild(root);
+
+		// After the entrance choreography, freeze the resting state so
+		// selection changes can't re-trigger the intro animations.
+		setTimeout(function () {
+			pill.classList.add('tm-settled');
+		}, 1300);
 	}
 
 	function init() {

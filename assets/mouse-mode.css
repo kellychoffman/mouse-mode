@@ -4,30 +4,75 @@
  * Picker pill, upper right
  * ------------------------------------------------------------------ */
 
-/* 45px top keeps the pill clear of WordPress's logged-in admin bar. */
+/* 45px top keeps the pill clear of WordPress's logged-in admin bar.
+   z-index sits just below the admin bar (99999) so its drop-down menus —
+   notifications, "Howdy" — open over the pill instead of behind it,
+   while still floating above ordinary page content. */
 .tm-root {
 	position: fixed;
 	top: 45px;
 	right: 25px;
-	z-index: 2147483646;
+	z-index: 99990;
 	font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 
+/* Liquid glass: a nearly-clear material that bends the page behind it.
+   The body is heavy blur + saturation; the "glass" is sold by the rim —
+   a bright top edge where light catches, a faint bottom bounce, and a
+   diagonal specular streak laid over the surface. */
 .tm-pill {
+	position: relative;
 	display: flex;
 	gap: 2px;
 	padding: 5px;
 	border-radius: 999px;
-	background: rgba(255, 255, 255, 0.78);
-	-webkit-backdrop-filter: blur(14px) saturate(1.4);
-	backdrop-filter: blur(14px) saturate(1.4);
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: linear-gradient(155deg,
+		rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.14) 60%);
+	-webkit-backdrop-filter: blur(24px) saturate(1.9);
+	backdrop-filter: blur(24px) saturate(1.9);
+	border: 1px solid rgba(255, 255, 255, 0.38);
 	box-shadow:
-		0 1px 2px rgba(0, 0, 0, 0.05),
-		0 14px 36px -14px rgba(0, 0, 0, 0.28);
+		inset 0 1px 1px rgba(255, 255, 255, 0.7),
+		inset 0 -1px 1px rgba(255, 255, 255, 0.18),
+		0 1px 2px rgba(0, 0, 0, 0.06),
+		0 16px 40px -12px rgba(0, 0, 0, 0.3);
 	opacity: 0;
 	transform: translateY(-12px);
 	animation: tm-drop 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+}
+
+/* Specular streak across the surface. */
+.tm-pill::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	background: linear-gradient(115deg,
+		transparent 18%,
+		rgba(255, 255, 255, 0.4) 34%,
+		rgba(255, 255, 255, 0.1) 48%,
+		transparent 60%);
+	opacity: 0.55;
+}
+
+/* The glassy bubble that slides between options, iOS-style. */
+.tm-glass-chip {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.95);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.95),
+		inset 0 -2px 4px rgba(0, 0, 0, 0.06),
+		0 0 0 0.5px rgba(0, 0, 0, 0.09),
+		0 4px 10px -2px rgba(0, 0, 0, 0.35);
+	transition: transform 0.45s cubic-bezier(0.3, 1.45, 0.45, 1);
+	opacity: 0;
+	animation: tm-pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s forwards;
 }
 
 @keyframes tm-drop {
@@ -75,7 +120,7 @@
 }
 
 .tm-btn:hover {
-	background: rgba(0, 0, 0, 0.06);
+	background: rgba(255, 255, 255, 0.3);
 }
 
 .tm-btn:active {
@@ -87,9 +132,14 @@
 	outline-offset: 2px;
 }
 
+/* The sliding chip carries the selected look; the button just sits on it. */
 .tm-btn[aria-checked="true"] {
-	background: #161616;
-	color: #fff;
+	background: transparent;
+	color: #111;
+}
+
+.tm-btn[aria-checked="true"]:hover {
+	background: transparent;
 }
 
 .tm-btn.tm-pop {
@@ -101,6 +151,19 @@
 	0% { transform: scale(0.7); }
 	60% { transform: scale(1.12); }
 	100% { transform: scale(1); }
+}
+
+/* Once the entrance has played, pin everything visible — otherwise
+   toggling .tm-pop re-runs the entrance animation (opacity 0 + delay)
+   and the deselected icon blinks out for half a second. */
+.tm-pill.tm-settled .tm-btn,
+.tm-pill.tm-settled .tm-glass-chip {
+	animation: none;
+	opacity: 1;
+}
+
+.tm-pill.tm-settled .tm-btn.tm-pop {
+	animation: tm-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tm-btn svg {
@@ -146,11 +209,26 @@
  * ------------------------------------------------------------------ */
 
 html.tm-on-dark .tm-pill {
-	background: rgba(26, 26, 26, 0.72);
-	border-color: rgba(255, 255, 255, 0.14);
+	background: linear-gradient(155deg,
+		rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 60%);
+	border-color: rgba(255, 255, 255, 0.18);
 	box-shadow:
-		0 1px 2px rgba(0, 0, 0, 0.4),
-		0 14px 36px -14px rgba(0, 0, 0, 0.65);
+		inset 0 1px 1px rgba(255, 255, 255, 0.28),
+		inset 0 -1px 1px rgba(255, 255, 255, 0.06),
+		0 1px 2px rgba(0, 0, 0, 0.35),
+		0 16px 40px -12px rgba(0, 0, 0, 0.7);
+}
+
+html.tm-on-dark .tm-pill::after {
+	opacity: 0.22;
+}
+
+html.tm-on-dark .tm-glass-chip {
+	background: rgba(248, 246, 240, 0.88);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.95),
+		inset 0 -2px 4px rgba(0, 0, 0, 0.08),
+		0 3px 10px -2px rgba(0, 0, 0, 0.5);
 }
 
 html.tm-on-dark .tm-btn {
@@ -158,7 +236,7 @@ html.tm-on-dark .tm-btn {
 }
 
 html.tm-on-dark .tm-btn:hover {
-	background: rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.12);
 }
 
 html.tm-on-dark .tm-btn:focus-visible {
@@ -166,8 +244,12 @@ html.tm-on-dark .tm-btn:focus-visible {
 }
 
 html.tm-on-dark .tm-btn[aria-checked="true"] {
-	background: #f2efe8;
+	background: transparent;
 	color: #141414;
+}
+
+html.tm-on-dark .tm-btn[aria-checked="true"]:hover {
+	background: transparent;
 }
 
 html.tm-on-dark .tm-tip {
@@ -189,6 +271,13 @@ html.tm-mode-blob * {
 html.tm-mode-blob .tm-root,
 html.tm-mode-blob .tm-root * {
 	cursor: default !important;
+}
+
+/* Same over the WordPress admin bar, but keep its natural cursors
+   (pointer on links) so it behaves like a normal admin bar. */
+html.tm-mode-blob #wpadminbar,
+html.tm-mode-blob #wpadminbar * {
+	cursor: auto !important;
 }
 
 .tm-blob-stage {
@@ -257,6 +346,13 @@ html.tm-mode-lens * {
 html.tm-mode-lens .tm-root,
 html.tm-mode-lens .tm-root * {
 	cursor: default !important;
+}
+
+/* Over the admin bar the loupe melts (via JS) and its natural cursors
+   return, so you can read notifications and click menus normally. */
+html.tm-mode-lens #wpadminbar,
+html.tm-mode-lens #wpadminbar * {
+	cursor: auto !important;
 }
 
 /* Near an embed the loupe stands down and the regular cursor returns

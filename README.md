@@ -7,10 +7,14 @@ See it in action on my personal site: https://kelly.blog/
 Details:
 
 - The choice is remembered per visitor in `localStorage`.
+- The picker is a liquid-glass pill — a clear, blurred material with a
+  refractive rim and a glass selection bubble that glides between options.
 - The widget detects dark sites from the page background and flips its whole
   palette automatically.
-- Hovering anywhere over the picker hands control back to the normal system
-  cursor (and the blob/loupe melt out of the way) so choosing is never fiddly.
+- Hovering over the picker — or the WordPress admin bar and any menu it opens
+  — hands control back to the normal system cursor (and the blob/loupe melt
+  out of the way). The pill also tucks beneath admin-bar menus so it never
+  covers your notifications.
 - Link detection is forgiving: anything interactive within ~18px of the
   pointer counts as a hover, so the blob doesn't demand pixel-perfect aim.
 - Mouse users only (`pointer: fine`); phones and tablets are left alone.

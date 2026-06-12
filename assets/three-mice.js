@@ -30,9 +30,34 @@
 		y: window.innerHeight / 3,
 		hover: false,
 		overPicker: false,
-		overEmbed: false,
+		away: false, // over an embed or out of the window — no events coming
+		lastEvent: 0,
 		seen: false,
 	};
+
+	function isEmbed(el) {
+		var tag = el && el.tagName;
+		return tag === 'IFRAME' || tag === 'EMBED' || tag === 'OBJECT';
+	}
+
+	// Last-ditch net: if mousemove has gone silent and the last known
+	// position is at/near an embed, the pointer almost certainly slid
+	// into it (embeds swallow events without telling the parent).
+	function silentNearEmbed(now) {
+		if (pointer.away || !pointer.seen) return false;
+		if (now - pointer.lastEvent < 300) return false;
+		var embeds = document.querySelectorAll('iframe, embed, object');
+		for (var i = 0; i < embeds.length; i++) {
+			var r = embeds[i].getBoundingClientRect();
+			if (
+				pointer.x > r.left - 28 && pointer.x < r.right + 28 &&
+				pointer.y > r.top - 28 && pointer.y < r.bottom + 28
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	function isInteractive(el) {
 		return !!(el && el.closest && el.closest(INTERACTIVE));
@@ -60,7 +85,8 @@
 			pointer.x = e.clientX;
 			pointer.y = e.clientY;
 			pointer.seen = true;
-			pointer.overEmbed = false;
+			pointer.away = false;
+			pointer.lastEvent = performance.now();
 			var t = e.target;
 			pointer.hover =
 				isInteractive(t) || nearInteractive(e.clientX, e.clientY);
@@ -71,15 +97,26 @@
 
 	// Iframes (YouTube embeds etc.) swallow every mouse event, so the page
 	// stops hearing mousemove the moment the pointer crosses onto one and
-	// the blob/loupe would freeze mid-air. We catch the crossing itself —
-	// the parent still gets a mouseover targeting the iframe element —
-	// and let the effects melt away until the pointer re-emerges.
+	// the blob/loupe would freeze mid-air. Browsers are inconsistent about
+	// which boundary events the parent still gets, so we listen for both
+	// sides of the crossing — mouseover targeting the embed, and mouseout
+	// whose relatedTarget is the embed (or null, i.e. the pointer left the
+	// window entirely). The effects melt away until the pointer returns;
+	// silentNearEmbed() in the animation loops is the final fallback.
 	document.addEventListener(
 		'mouseover',
 		function (e) {
-			var tag = e.target && e.target.tagName;
-			pointer.overEmbed =
-				tag === 'IFRAME' || tag === 'EMBED' || tag === 'OBJECT';
+			if (isEmbed(e.target)) pointer.away = true;
+		},
+		{ passive: true, capture: true }
+	);
+
+	document.addEventListener(
+		'mouseout',
+		function (e) {
+			if (!e.relatedTarget || isEmbed(e.relatedTarget)) {
+				pointer.away = true;
+			}
 		},
 		{ passive: true, capture: true }
 	);
@@ -288,7 +325,9 @@
 			el.style.height = size + 'px';
 			goo.appendChild(el);
 			var ang = Math.random() * Math.PI * 2;
-			var speed = 0.6 + Math.random() * 0.8;
+			// Barely faster than still: the drop spends a long moment
+			// pulling a taffy neck out of the blob before it breaks free.
+			var speed = 0.12 + Math.random() * 0.18;
 			drops.push({
 				el: el,
 				size: size,
@@ -296,7 +335,7 @@
 				x: parts[0].x + Math.cos(ang) * SIZES[0] * 0.4,
 				y: parts[0].y + Math.sin(ang) * SIZES[0] * 0.4,
 				vx: Math.cos(ang) * speed,
-				vy: Math.sin(ang) * speed - 0.25, // slight upward bias
+				vy: Math.sin(ang) * speed - 0.06, // faint upward drift
 				life: 1,
 			});
 		}
@@ -311,12 +350,13 @@
 		function tick() {
 			if (pointer.seen) stage.style.visibility = 'visible';
 
-			// Melt away over the picker (normal cursor takes over) and
-			// over embeds (which stop reporting the pointer entirely).
-			fade += ((pointer.overPicker || pointer.overEmbed ? 0 : 1) - fade) * 0.2;
-			stage.style.opacity = fade.toFixed(3);
-
 			var now = performance.now();
+			if (silentNearEmbed(now)) pointer.away = true;
+
+			// Melt away over the picker (normal cursor takes over) and
+			// over embeds / out of the window (no events coming).
+			fade += ((pointer.overPicker || pointer.away ? 0 : 1) - fade) * 0.2;
+			stage.style.opacity = fade.toFixed(3);
 			if (Math.abs(pointer.x - lastPX) > 2 || Math.abs(pointer.y - lastPY) > 2) {
 				lastPX = pointer.x;
 				lastPY = pointer.y;
@@ -324,19 +364,20 @@
 			}
 			var idle = now - lastMove;
 
-			// Droplets start after ~a second of stillness and come faster
-			// the longer the mouse rests.
+			// Droplets start after a good five seconds of stillness and
+			// drift off in slow motion, coming a little more often the
+			// longer the mouse rests.
 			if (
-				!REDUCED_MOTION && pointer.seen && idle > 900 &&
+				!REDUCED_MOTION && pointer.seen && idle > 5000 &&
 				drops.length < 8 && fade > 0.5 &&
-				now - lastSpawn > Math.max(260, 1100 - idle * 0.12)
+				now - lastSpawn > Math.max(1200, 3000 - (idle - 5000) * 0.15)
 			) {
 				spawnDrop(now);
 			}
 
 			for (var d = drops.length - 1; d >= 0; d--) {
 				var dr = drops[d];
-				dr.life -= 0.007;
+				dr.life -= 0.0022; // ~7.5s of slow-motion drift
 				if (dr.life <= 0) {
 					goo.removeChild(dr.el);
 					drops.splice(d, 1);
@@ -344,8 +385,8 @@
 				}
 				dr.x += dr.vx;
 				dr.y += dr.vy;
-				dr.vx *= 0.985;
-				dr.vy *= 0.985;
+				dr.vx *= 0.998;
+				dr.vy *= 0.998;
 				// Scale floor keeps the drop above the goo threshold for
 				// most of its life; it winks out near the end.
 				var ds = 0.5 + 0.5 * dr.life;
@@ -470,9 +511,11 @@
 		function tick() {
 			if (pointer.seen) el.style.visibility = 'visible';
 
+			if (silentNearEmbed(performance.now())) pointer.away = true;
+
 			// Step aside while choosing a cursor in the picker, and over
-			// embeds (which stop reporting the pointer entirely).
-			fade += ((pointer.overPicker || pointer.overEmbed ? 0 : 1) - fade) * 0.2;
+			// embeds / out of the window (no events coming).
+			fade += ((pointer.overPicker || pointer.away ? 0 : 1) - fade) * 0.2;
 			el.style.opacity = fade.toFixed(3);
 
 			lx += (pointer.x - lx) * 0.3;
